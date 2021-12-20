@@ -42,11 +42,13 @@ namespace GED_projet
 
             while(stop == false)
             {
-                sendFileToDigitalCorner(token, "test.pdf", "test_developpement");
 
-                getAllDocumentId(token, "test_developpement");
 
-                exportMetaDataInCSV(token, "test_developpement");
+                sendFileToDigitalCorner(token, "exemple_facture.pdf", "Gestion des factures 2");
+
+                //getAllDocumentId(token, "test_developpement");
+
+                //exportMetaDataInCSV(token, "test_developpement");
 
                 Console.WriteLine("q for quit");
 
@@ -123,7 +125,7 @@ namespace GED_projet
             request2.AddHeader("Authorization", "Bearer " + token);
             IRestResponse response2 = client2.Execute(request);
 
-            Console.WriteLine(response2);
+            
 
             return response2.Content.ToString();
         }
@@ -156,17 +158,68 @@ namespace GED_projet
             attachement.Add("fileName", filepath);
             attachement.Add("base64File", fileBase64);
 
+            // construction des fe
             var fields = new JArray();
             JArray fielsFromStructure = (JArray)rss["Fields"];
+            Console.WriteLine(fielsFromStructure);
+
+
+            List<String> values = new List<String>();
+
+            //ff date
+            values.Add("20.12.2021");
+            // fournisseur
+            values.Add("Tornos");
+            // num facutre
+            values.Add("123444");
+            // description
+            values.Add("pas de description");
+            //etat
+            values.Add("A editer");
+            //"responsable"
+            values.Add("Admin Groupe 2");
+            // "sous-validateur"
+            values.Add("Admin Groupe 2");
+            // validateur1
+            values.Add("Autre 1");
+            // validateur2
+            values.Add("compta 2");
+            //direction générale
+            values.Add("Vincent Chassot");
+            // comptabilité
+            values.Add("Mounir Marzouk");
+            // date de l'échéance
+            values.Add("19.01.2022");
+            //swift
+            values.Add(null);
+            // numero de compte
+            values.Add(null);
+            //devise facture
+            values.Add("CHF");
+            // rabais
+            values.Add(null);
+            // escompte
+            values.Add(null);
+            // TVA
+            values.Add("Normal");
+            // Montant HT
+            values.Add(null);
+            // Montant TTC
+            values.Add(null);
+
+
+
 
             for (int i = 0; i < fielsFromStructure.Count; i++)
             {
                 var oneFields = new JObject();
                 oneFields.Add("code", fielsFromStructure[i]["Code"]);
-                oneFields.Add("value", "waiting");
+                oneFields.Add("value", values[i]);
                 fields.Add(oneFields);
 
             }
+
+            Console.WriteLine(fields);
 
             var mainJson = new JObject();
             mainJson.Add("objectID", 0);
@@ -274,30 +327,37 @@ namespace GED_projet
 
                 mainJson.Add(jObject);
 
-                mainJson.Add(null);
-                mainJson.Add(null);
-                mainJson.Add(null);
-                mainJson.Add(null);
-              
+                JArray jArray = (JArray)jObject["Fields"];
 
-
-                string jsonInput = mainJson.ToString();
-                Console.WriteLine(jsonInput);
-
-                var workbook = new Workbook();
-
-                var worksheet = workbook.Worksheets[0];
-
-                var layoutOptions = new JsonLayoutOptions();
-                layoutOptions.ArrayAsTable = true;
-
-                JsonUtility.ImportData(jsonInput, worksheet.Cells, 0, 0, layoutOptions);
-
-                workbook.Save("output.csv", SaveFormat.CSV);
-
+                int size = jArray.Count;
+                
+                
+                for (int j = 0; j < size; j++)
+                {
+                    mainJson.Add(null);
+                };
             }
 
-            
+            string jsonInput = mainJson.ToString();
+            Console.WriteLine(jsonInput);
+
+            var workbook = new Workbook();
+
+            var worksheet = workbook.Worksheets[0];
+
+            var layoutOptions = new JsonLayoutOptions();
+            layoutOptions.ArrayAsTable = true;
+
+            JsonUtility.ImportData(jsonInput, worksheet.Cells, 0, 0, layoutOptions);
+
+            workbook.Save("output.csv", SaveFormat.CSV);
+
+
+        }
+
+        static void TransformPDFToBase64()
+        {
+
         }
 
     }
