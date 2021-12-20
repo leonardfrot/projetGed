@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Aspose.Cells;
 using UnityEngine;
 using Aspose.Cells.Utility;
+using System.IO;
 
 class User
 {
@@ -38,17 +39,16 @@ namespace GED_projet
 
             Console.WriteLine("bienvenue " + user.firstname + " " + user.lastname);
 
-            Boolean stop = false;
+            
 
-            while(stop == false)
+            while(true)
             {
 
 
-                sendFileToDigitalCorner(token, "exemple_facture.pdf", "Gestion des factures 2");
+                //sendFileToDigitalCorner(token, "exemple_facture.pdf", "Gestion des factures 2");
 
-                //getAllDocumentId(token, "test_developpement");
 
-                //exportMetaDataInCSV(token, "test_developpement");
+                exportMetaDataInCSV(token, "Gestion des factures 2");
 
                 Console.WriteLine("q for quit");
 
@@ -56,7 +56,7 @@ namespace GED_projet
 
                 if(res == "q")
                 {
-                    stop = true;
+                    break;
                 }
 
 
@@ -161,7 +161,7 @@ namespace GED_projet
             // construction des fe
             var fields = new JArray();
             JArray fielsFromStructure = (JArray)rss["Fields"];
-            Console.WriteLine(fielsFromStructure);
+            
 
 
             List<String> values = new List<String>();
@@ -219,7 +219,7 @@ namespace GED_projet
 
             }
 
-            Console.WriteLine(fields);
+            
 
             var mainJson = new JObject();
             mainJson.Add("objectID", 0);
@@ -269,11 +269,12 @@ namespace GED_projet
                     contentTypeId = jArray[i]["id"].ToString();
                     break;
                 }
-            }
+            };
+            
 
-            // construction du search pattern à envoyer
+             // construction du search pattern à envoyer
 
-            String searchPattern = "test_etat|l01|en attente d'export|list";
+            String searchPattern = "FF_2_ETAT|l01|en attente d'export|list";
 
             var mainJson = new JObject();
             mainJson.Add("searchPattern", searchPattern);
@@ -298,7 +299,24 @@ namespace GED_projet
                 idList.Add(jArray2[i]["ObjectID"].ToString());
             };
 
+            
+            
+
             return idList;
+        }
+
+        static void exportPDF(String fileToTransform, String fileName)
+        {
+            byte[] sPDFDecoded = Convert.FromBase64String(fileToTransform);
+
+            string[] arr = fileName.Split('.');
+
+            string newfilename = arr[0] + "_exported.pdf";
+
+
+            File.WriteAllBytes(newfilename, sPDFDecoded);
+            Console.WriteLine("pdf exported");
+
         }
 
 
@@ -312,7 +330,8 @@ namespace GED_projet
 
             for (int i = 0; i < idList.Count; i++)
             {
-
+                
+                // récupération des métadonnées
                 var client = new RestClient("http://157.26.82.44:2240/api/document/" + idList[i] + "/metadata");
                 client.Timeout = -1;
                 var request = new RestRequest(Method.GET);
@@ -336,10 +355,32 @@ namespace GED_projet
                 {
                     mainJson.Add(null);
                 };
+
+                // récupération des attachments
+
+
+                var client2 = new RestClient("http://157.26.82.44:2240/api/document/" + idList[i]+ "/attachment");
+                client2.Timeout = -1;
+                var request2 = new RestRequest(Method.GET);
+                request2.AddHeader("Authorization", "Bearer " + token);
+                IRestResponse response2 = client2.Execute(request2);
+               
+                String jsonResponse2 = response2.Content.ToString();
+                JObject jObject2 = Newtonsoft.Json.Linq.JObject.Parse(jsonResponse2);
+                String filename = jObject2["FileName"].ToString();
+                
+                String fileToTransform = jObject2["File"].ToString();
+
+                exportPDF(fileToTransform, filename);
+
+
+
+
+
             }
 
             string jsonInput = mainJson.ToString();
-            Console.WriteLine(jsonInput);
+            
 
             var workbook = new Workbook();
 
@@ -351,14 +392,12 @@ namespace GED_projet
             JsonUtility.ImportData(jsonInput, worksheet.Cells, 0, 0, layoutOptions);
 
             workbook.Save("output.csv", SaveFormat.CSV);
+            Console.WriteLine("csv exported");
 
 
         }
 
-        static void TransformPDFToBase64()
-        {
-
-        }
+       
 
     }
 }
