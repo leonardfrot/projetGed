@@ -165,20 +165,37 @@ namespace GED_projet
                 String metaDataXML = "C:\\digital_corner\\Import\\metadata_facture1.xml";
                 String type = "Facture_fourn";
 
-                //sendFileToDigitalCorner(token, filepath, type, metaDataXML);
+                
 
-
-                exportMetaDataInCSV(token, type);
-
+                Console.WriteLine("What u want to do?");
+                Console.WriteLine("a for import");
+                Console.WriteLine("b for export");
                 Console.WriteLine("q for quit");
 
                 String res = Console.ReadLine();
 
-                if(res == "q")
+                switch (res)
                 {
-                    break;
+                    case "a":
+                        Console.WriteLine("give a filepath");
+                        filepath = Console.ReadLine();
+                        Console.WriteLine("give a metadata file");
+                        metaDataXML = Console.ReadLine();
+                        sendFileToDigitalCorner(token, filepath, type, metaDataXML);
+                        break;
+                    case "b":
+                        exportMetaDataInCSV(token, type);
+                        break;
+                    case "q": return;
+                        
+                    default: Console.WriteLine("please select again");
+                        break;
                 }
 
+                
+                
+
+                
 
             }
         }
