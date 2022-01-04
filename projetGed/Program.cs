@@ -6,6 +6,8 @@ using Aspose.Cells;
 using UnityEngine;
 using Aspose.Cells.Utility;
 using System.IO;
+using System.Xml;
+
 
 class User
 {
@@ -17,6 +19,121 @@ class User
     public string firstname;
     public string lastname;
 }
+
+
+public class Facture
+{
+    public string Date { get; set; }
+    public string Fournisseur { get; set; }
+    public string NumFacture { get; set; }
+    public string Description { get; set; }
+    public string Etat { get; set; }
+    public string Responsable { get; set; }
+    public string SousValidateur { get; set; }
+    public string Validateur1 { get; set; }
+    public string Validateur2 { get; set; }
+    public string DirectionGenerale { get; set; }
+    
+    public string DateEcheance { get; set; }
+    
+    public string NumCompte { get; set; }
+    public string Devise { get; set; }
+    
+    public string Tva { get; set; }
+    
+    public string MontantTTC { get; set; }
+
+    public string Comptabilite { get; set; }
+
+    public string Rabais { get; set; }
+    public string Escompte { get; set; }
+
+    public string MontantHT { get; set; }
+
+    public string Swift { get; set; }
+
+    
+
+    
+
+
+    public Facture(string date, string fournisseur, string numFacture, string description,
+    string etat, string responsable, string sousValidateur, string validateur1, string validateur2,
+    string directionGenerale, string comptabilite, string dateEcheance, string swift,
+    string numCompte, string devise, string rabais, string escompte, string tva,
+    string montantHT, string montantTTC)
+    {
+        Date = date;
+        Fournisseur = fournisseur;
+        NumFacture = numFacture;
+        Description = description;
+        Etat = etat;
+        Responsable = responsable;
+        SousValidateur = sousValidateur;
+        Validateur1 = validateur1;
+        Validateur2 = validateur2;
+        DirectionGenerale = directionGenerale;
+        Comptabilite = comptabilite;
+        DateEcheance = dateEcheance;
+        Swift = swift;
+        NumCompte = numCompte;
+        Devise = devise;
+        Rabais = rabais;
+        Escompte = escompte;
+        Tva = tva;
+        MontantHT = montantHT;
+        MontantTTC = montantTTC;
+    }
+    public string getValue(int code)
+    {
+        switch (code)
+        {
+            case 0:
+                return Date;
+            case 1:
+                return Fournisseur;
+            case 2:
+                return NumFacture;
+            case 3:
+                return Description;
+            case 4:
+                return Etat;
+            case 5:
+                return Responsable;
+            case 6:
+                return SousValidateur;
+            case 7:
+                return Validateur1;
+            case 8:
+                return Validateur2;
+            case 9:
+                return DirectionGenerale;
+            case 10:
+                return DateEcheance;
+            case 11:
+                return NumCompte;
+            case 12:
+                return Devise;
+            case 13:
+                return Tva;
+            case 14:
+                return MontantTTC;
+            case 15:
+                return Comptabilite;
+            case 16:
+                return Rabais;
+            case 17:
+                return Escompte;
+            case 18:
+                return MontantHT;
+            case 19:
+                return Swift;
+            default:
+                return null;
+        }
+    }
+}
+
 
 
 
@@ -34,7 +151,7 @@ namespace GED_projet
             String token = GetToken(url, username, password);
             Console.WriteLine("vous êtes connecté");
 
-            //get userinformation and welcome
+            //getuserinformation and welcome
             User user = getUserInformation(token);
 
             Console.WriteLine("bienvenue " + user.firstname + " " + user.lastname);
@@ -44,11 +161,14 @@ namespace GED_projet
             while(true)
             {
 
+                String filepath = "C:\\digital_corner\\Import\\exemple_facture_2.pdf";
+                String metaDataXML = "C:\\digital_corner\\Import\\metadata_facture1.xml";
+                String type = "Facture_fourn";
 
-                //sendFileToDigitalCorner(token, "exemple_facture.pdf", "Gestion des factures 2");
+                //sendFileToDigitalCorner(token, filepath, type, metaDataXML);
 
 
-                exportMetaDataInCSV(token, "Gestion des factures 2");
+                exportMetaDataInCSV(token, type);
 
                 Console.WriteLine("q for quit");
 
@@ -62,6 +182,38 @@ namespace GED_projet
 
             }
         }
+
+        //cette méthode est pour lire un xml de metadonnées
+        static List<Facture> ReadXML(String metadata)
+        {
+            XmlDocument xmlDocument = new XmlDocument();
+
+            List<Facture> factures = new List<Facture>();
+
+            xmlDocument.Load(metadata);
+
+            XmlNodeList xmlNodeList = xmlDocument.SelectNodes("/Factures/Facture");
+
+            Facture facturee;
+            
+
+            foreach (XmlNode xmlNode in xmlNodeList)
+            {
+
+                
+                facturee = new Facture(xmlNode["Date"].InnerText, xmlNode["Fournisseur"].InnerText, xmlNode["NumFacture"].InnerText,
+                    xmlNode["Description"].InnerText, xmlNode["Etat"].InnerText, xmlNode["Responsable"].InnerText,
+                    xmlNode["SousValidateur"].InnerText, xmlNode["Validateur1"].InnerText, xmlNode["Validateur2"].InnerText,
+                    xmlNode["DirectionGenerale"].InnerText, xmlNode["Comptabilite"].InnerText, xmlNode["DateEcheance"].InnerText,
+                    xmlNode["Swift"].InnerText, xmlNode["NumCompte"].InnerText, xmlNode["Devise"].InnerText, xmlNode["Rabais"].InnerText,
+                    xmlNode["Escompte"].InnerText, xmlNode["Tva"].InnerText, xmlNode["MontantHT"].InnerText, xmlNode["MontantTTC"].InnerText);
+                    factures.Add(facturee);
+            }
+
+            
+            return factures;
+        }
+
 
         // cette méthode retour le json avec le tocken.
         static string GetToken(String url, String username, String password)
@@ -124,6 +276,7 @@ namespace GED_projet
             var request2 = new RestRequest(Method.GET);
             request2.AddHeader("Authorization", "Bearer " + token);
             IRestResponse response2 = client2.Execute(request);
+            
 
             
 
@@ -143,7 +296,7 @@ namespace GED_projet
         }
 
         // la méthode pour envoyer la facture
-        static void sendFileToDigitalCorner(String token, String filepath, String contentTypeName)
+        static void sendFileToDigitalCorner(String token, String filepath, String contentTypeName, String metadata)
         {
             // on récupère le fichier en base 64
             String fileBase64 = TransformPDFToBase64(filepath);
@@ -151,71 +304,32 @@ namespace GED_projet
             String jsonStructure = getInvoiceStructure(token, contentTypeName);
             // on modifie la jsonStructure pour envoyer la nouvelle facture
             JObject rss = JObject.Parse(jsonStructure);
+            
 
             //créer un nouvel Jobjet à envoyer d'abord pour les attachement
+
+            String[] filenameArr = filepath.Split('\\');
+            String filename = filenameArr[3];
+            
             var attachement = new JObject();
             attachement.Add("id", 0);
-            attachement.Add("fileName", filepath);
+            attachement.Add("fileName", filename);
             attachement.Add("base64File", fileBase64);
 
             // construction des fe
             var fields = new JArray();
             JArray fielsFromStructure = (JArray)rss["Fields"];
-            
 
 
-            List<String> values = new List<String>();
-
-            //ff date
-            values.Add("20.12.2021");
-            // fournisseur
-            values.Add("Tornos");
-            // num facutre
-            values.Add("123444");
-            // description
-            values.Add("pas de description");
-            //etat
-            values.Add("A editer");
-            //"responsable"
-            values.Add("Admin Groupe 2");
-            // "sous-validateur"
-            values.Add("Admin Groupe 2");
-            // validateur1
-            values.Add("Autre 1");
-            // validateur2
-            values.Add("compta 2");
-            //direction générale
-            values.Add("Vincent Chassot");
-            // comptabilité
-            values.Add("Mounir Marzouk");
-            // date de l'échéance
-            values.Add("19.01.2022");
-            //swift
-            values.Add(null);
-            // numero de compte
-            values.Add(null);
-            //devise facture
-            values.Add("CHF");
-            // rabais
-            values.Add(null);
-            // escompte
-            values.Add(null);
-            // TVA
-            values.Add("Normal");
-            // Montant HT
-            values.Add(null);
-            // Montant TTC
-            values.Add(null);
-
-
-
+            Facture facture = ReadXML(metadata)[0];
 
             for (int i = 0; i < fielsFromStructure.Count; i++)
             {
                 var oneFields = new JObject();
                 oneFields.Add("code", fielsFromStructure[i]["Code"]);
-                oneFields.Add("value", values[i]);
+                oneFields.Add("value", facture.getValue(i));
                 fields.Add(oneFields);
+                
 
             }
 
@@ -235,7 +349,8 @@ namespace GED_projet
 
             request.AddParameter("application/json", mainJson, RestSharp.ParameterType.RequestBody);
             IRestResponse response = client.Execute(request);
-            Console.WriteLine("file sent");
+            
+            Console.WriteLine(filepath + " sent");
         }
 
 
@@ -305,7 +420,40 @@ namespace GED_projet
             return idList;
         }
 
-        static void exportPDF(String fileToTransform, String fileName)
+
+        static void changeState(String token,  String id)
+        {
+            var client = new RestClient("http://157.26.82.44:2240/api/document/"+id+"/metadata");
+            client.Timeout = -1;
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("Authorization", "Bearer " + token);
+            IRestResponse response = client.Execute(request);
+            
+            String jsonResponse = response.Content.ToString();
+            JObject jobject = Newtonsoft.Json.Linq.JObject.Parse(jsonResponse);
+            jobject["Fields"][4]["Value"] = "Archivé";
+
+
+            
+            
+
+            var client2 = new RestClient("http://157.26.82.44:2240/api/document/save");
+            client2.Timeout = -1;
+            var request2 = new RestRequest(Method.POST);
+            request2.AddHeader("Authorization", "Bearer " + token);
+            request2.AddHeader("Content-Type", "application/json");
+            var body = jobject;
+            request2.AddParameter("application/json", body, RestSharp.ParameterType.RequestBody);
+            IRestResponse response2 = client2.Execute(request2);
+            
+
+
+
+
+
+        }
+
+        static void exportPDF(String fileToTransform, String fileName, String id)
         {
             byte[] sPDFDecoded = Convert.FromBase64String(fileToTransform);
 
@@ -314,8 +462,8 @@ namespace GED_projet
             string newfilename = arr[0] + "_exported.pdf";
 
 
-            File.WriteAllBytes(newfilename, sPDFDecoded);
-            Console.WriteLine("pdf exported");
+            File.WriteAllBytes("C:\\digital_corner\\Export\\" + id + newfilename, sPDFDecoded);
+            Console.WriteLine(newfilename);
 
         }
 
@@ -330,6 +478,8 @@ namespace GED_projet
 
             for (int i = 0; i < idList.Count; i++)
             {
+
+                
                 
                 // récupération des métadonnées
                 var client = new RestClient("http://157.26.82.44:2240/api/document/" + idList[i] + "/metadata");
@@ -362,8 +512,7 @@ namespace GED_projet
                 var client2 = new RestClient("http://157.26.82.44:2240/api/document/" + idList[i]+ "/attachment");
                 client2.Timeout = -1;
                 var request2 = new RestRequest(Method.GET);
-                request2.AddHeader("Authorization", "Bearer " + token);
-                IRestResponse response2 = client2.Execute(request2);
+                request2.AddHeader("Authorization", "Bearer " + token);IRestResponse response2 = client2.Execute(request2);
                
                 String jsonResponse2 = response2.Content.ToString();
                 JObject jObject2 = Newtonsoft.Json.Linq.JObject.Parse(jsonResponse2);
@@ -371,7 +520,9 @@ namespace GED_projet
                 
                 String fileToTransform = jObject2["File"].ToString();
 
-                exportPDF(fileToTransform, filename);
+                exportPDF(fileToTransform, filename, idList[i]);
+
+                changeState(token, idList[i]);
 
 
 
@@ -391,16 +542,25 @@ namespace GED_projet
 
             JsonUtility.ImportData(jsonInput, worksheet.Cells, 0, 0, layoutOptions);
 
-            workbook.Save("output.csv", SaveFormat.CSV);
+            workbook.Save("C:\\digital_corner\\Export\\output.csv", SaveFormat.CSV);
             Console.WriteLine("csv exported");
+
+            
 
 
         }
 
+
+        
+
        
 
     }
+
+
+    
 }
+
 
 
 
