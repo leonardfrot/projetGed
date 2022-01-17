@@ -11,3 +11,4 @@
 #### C:\\digital_corner\\Import\\metadata_facture4.xml
 +100000 CHF sans sou validateur
 ## press b for export
+export de tous les fichier en attente d'export en pdf et csv
